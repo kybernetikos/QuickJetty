@@ -1,6 +1,7 @@
 package com.kybernetikos;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -22,18 +23,18 @@ import org.eclipse.jetty.servlets.ProxyServlet;
 public abstract class WebServer {
 
 	private final String path;
-	private final int port;
 	private final Map<String, String> proxies;
 	private Server server;
+	private InetSocketAddress address;
 
-	public WebServer(String path, int port, Map<String, String> proxies) {
+	public WebServer(String path, InetSocketAddress address, Map<String, String> proxies) {
 		this.path = path;
-		this.port = port;
+		this.address = address;
 		this.proxies = proxies;
 	}
 
 	public void start() {
-		server = new Server(port);
+		server = new Server(this.address);
 		HandlerCollection collection = new HandlerCollection();
 		ServletContextHandler handler = new ServletContextHandler();
 		handler.setResourceBase(path);
@@ -61,13 +62,16 @@ public abstract class WebServer {
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
+		
+		// took this out because it was annoying, but this would
+		// automatically open a browser to the root of the jetty server.
+		
 		// openRoot();
 	}
 
 	protected void openRoot() {
 		try {
-			java.awt.Desktop.getDesktop().browse(
-					java.net.URI.create("http://localhost:" + port));
+			java.awt.Desktop.getDesktop().browse( java.net.URI.create("http://"+address.getAddress()));
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -92,8 +96,7 @@ public abstract class WebServer {
 	protected void setupProxies(Map<String, String> proxies, ServletContextHandler handler) {
 		// Sets up proxies
 		for (Map.Entry<String, String> details : proxies.entrySet()) {
-			ServletHolder proxyHolder = new ServletHolder(
-					new ProxyServlet.Transparent());
+			ServletHolder proxyHolder = new ServletHolder(new ProxyServlet.Transparent());
 			String prefix = details.getKey();
 			if (prefix.startsWith("/") == false) {
 				prefix = "/" + prefix;
@@ -123,26 +126,36 @@ public abstract class WebServer {
 
 	protected static void showUseIfRequested(String[] args) {
 		if (args.length > 0) {
-			if (args[0].equalsIgnoreCase("/?")
-					|| args[0].equalsIgnoreCase("-h")
-					|| args[0].equalsIgnoreCase("--help")) {
+			if (args[0].equalsIgnoreCase("/?") || args[0].equalsIgnoreCase("-h") || args[0].equalsIgnoreCase("--help")) {
 				showUseSyntax();
 				System.exit(0);
 			}
 		}
 	}
 
-	protected static int getPortParameter(String[] args) {
+	protected static InetSocketAddress getAddressParameter(String[] args) {
+		InetSocketAddress address = new InetSocketAddress(8181);
 		int port = 8181;
+		String bindAddress = "";
 		if (args.length > 1) {
-			port = Integer.parseInt(args[1], 10);
+			String addressString = args[1];
+			if (addressString.contains(".") || addressString.contains(":")) {
+				String[] parts = addressString.split(":");
+				if (parts.length > 1) {
+					port = Integer.parseInt(parts[1]); 
+				}
+				bindAddress = parts[0];
+			} else {
+				port = Integer.parseInt(addressString);
+			}
 		}
-		return port;
+		address = new InetSocketAddress(bindAddress, port);
+		return address;
 	}
 
 	private static void showUseSyntax() {
 		System.out.println("Syntax:");
-		System.out.println("\tjava -jar httpd.jar [<path to serve> [<port> [\"prefix->proxyTo\" ...]]]");
+		System.out.println("\tjava -jar httpd.jar [<path to serve> [<port|interface to bind to> [\"prefix->proxyTo\" ...]]]");
 	}
 
 	protected static Map<String, String> getProxiesParameter(String[] args) {

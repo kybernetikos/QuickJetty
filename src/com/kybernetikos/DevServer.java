@@ -1,6 +1,7 @@
 package com.kybernetikos;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import javax.servlet.ServletException;
@@ -17,8 +18,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
  */
 public class DevServer extends WebServer {
 	
-	public DevServer(String path, int port, Map<String, String> proxies) {
-		super(path, port, proxies);
+	public DevServer(String path, InetSocketAddress address, Map<String, String> proxies) {
+		super(path, address, proxies);
 	}
 
 	@Override
@@ -44,10 +45,10 @@ public class DevServer extends WebServer {
 	public static void main(String[] args) throws InterruptedException {
 		showUseIfRequested(args);
 		String path = getPathParameter(args);
-		int port = getPortParameter(args);
+		InetSocketAddress address = getAddressParameter(args);
 		Map<String, String> proxies = getProxiesParameter(args);
 		
-		DevServer server = new DevServer(path, port, proxies);
+		DevServer server = new DevServer(path, address, proxies);
 		server.start();
 		server.join();
 	}

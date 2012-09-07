@@ -1,5 +1,6 @@
 package com.kybernetikos;
 
+import java.net.InetSocketAddress;
 import java.util.Map;
 
 import org.eclipse.jetty.servlet.DefaultServlet;
@@ -11,8 +12,8 @@ import org.eclipse.jetty.servlet.ServletHolder;
  */
 public class ProtoServer extends WebServer {
 
-	public ProtoServer(String path, int port, Map<String, String> proxies) {
-		super(path, port, proxies);
+	public ProtoServer(String path, InetSocketAddress address, Map<String, String> proxies) {
+		super(path, address, proxies);
 	}
 
 	protected void setupFileServing(ServletContextHandler handler) {
@@ -25,10 +26,10 @@ public class ProtoServer extends WebServer {
 	public static void main(String[] args) throws InterruptedException {
 		showUseIfRequested(args);
 		String path = getPathParameter(args);
-		int port = getPortParameter(args);
+		InetSocketAddress address = getAddressParameter(args);
 		Map<String, String> proxies = getProxiesParameter(args);
 
-		ProtoServer server = new ProtoServer(path, port, proxies);
+		ProtoServer server = new ProtoServer(path, address, proxies);
 		server.start();
 		server.join();
 	}
