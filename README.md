@@ -3,6 +3,8 @@ QuickJetty
 
 QuickJetty is a simple configuration for a jetty server.
 
+You can just drop the jar in a directory you want to serve and double click.
+
 You can run it from the command line to start up an http server with jsp support anywhere.  It also supports proxying so that you can use it when developing against, e.g. couchdb or some other service.
 
 The syntax is:
