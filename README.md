@@ -22,3 +22,5 @@ It has sensible defaults and is executable, so if you want to just serve a parti
     java -jar quickjetty.jar
 
 You can download the most recently committed built version from [here](https://github.com/kybernetikos/QuickJetty/blob/master/builtVersion/quickjetty.jar?raw=true).
+
+I recently came across [jtty](https://github.com/stephenh/jtty) which is a similar project that provides a nice way to serve webapps from the command line.
